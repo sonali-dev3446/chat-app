@@ -1,0 +1,22 @@
+Client → send username
+Server → fetch old messages
+Server → send messages back 
+
+Flow:-
+
+User opens app
+Prompt username
+socket.emit("join", username)
+Server fetches old messages
+Server → load_messages
+Client renders history
+New messages → real-time
+
+
+✅ Real-time chat
+✅ MongoDB message storage
+✅ Old messages loading
+✅ Active users list
+✅ Typing indicator
+✅ Auto-scroll
+✅ Sender/receiver UI
