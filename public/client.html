@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Realtime Chat App</title>
+
+  <style>
+    /* =========================
+           RESET PAGE STYLES
+        ==========================*/
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #ece5dd;
+
+      height: 100vh;
+
+      /* Prevent full page scrolling */
+      overflow: hidden;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* =========================
+           OUTER WRAPPER
+        ==========================*/
+    .chat-wrapper {
+      padding: 20px;
+    }
+
+    /* =========================
+           MAIN CHAT CONTAINER
+        ==========================*/
+    .chat-container {
+      width: 350px;
+
+      /* responsive height */
+      height: 80vh;
+
+      /* maximum limit */
+      max-height: 100%;
+
+      background: white;
+
+      display: flex;
+      flex-direction: column;
+
+      border-radius: 12px;
+
+      /* prevents children overflow */
+      overflow: hidden;
+
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* =========================
+           HEADER SECTION
+        ==========================*/
+    .chat-header {
+      background: #075e54;
+      color: white;
+
+      padding: 15px;
+
+      font-size: 18px;
+      font-weight: bold;
+
+      /* prevents shrinking */
+      flex-shrink: 0;
+    }
+
+    /* =========================
+           ACTIVE USERS
+        ==========================*/
+    #activeUsers {
+      margin-top: 5px;
+      font-size: 14px;
+      font-weight: normal;
+    }
+
+    /* =========================
+           TYPING TEXT
+        ==========================*/
+    #typing {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #ddd;
+    }
+
+    /* =========================
+           CHAT MESSAGE AREA
+        ==========================*/
+    .chat-box {
+
+      /* takes remaining space */
+      flex: 1;
+
+      padding: 10px;
+
+      background: #e5ddd5;
+
+      /* scroll only inside chat */
+      overflow-y: auto;
+
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =========================
+           COMMON MESSAGE STYLE
+        ==========================*/
+    .message {
+      max-width: 70%;
+
+      padding: 8px 12px;
+
+      margin: 6px 0;
+
+      border-radius: 8px;
+
+      font-size: 14px;
+
+      word-wrap: break-word;
+    }
+
+    /* =========================
+           SENT MESSAGE
+        ==========================*/
+    .sent {
+      background: #dcf8c6;
+
+      align-self: flex-end;
+    }
+
+    /* =========================
+           RECEIVED MESSAGE
+        ==========================*/
+    .received {
+      background: white;
+
+      align-self: flex-start;
+    }
+
+    /* =========================
+           INPUT SECTION
+        ==========================*/
+    .chat-input {
+      display: flex;
+
+      padding: 10px;
+
+      background: #f0f0f0;
+
+      /* keep input visible */
+      flex-shrink: 0;
+    }
+
+    /* =========================
+           INPUT BOX
+        ==========================*/
+    .chat-input input {
+      flex: 1;
+
+      padding: 10px;
+
+      border-radius: 20px;
+
+      border: none;
+
+      outline: none;
+    }
+
+    /* =========================
+           SEND BUTTON
+        ==========================*/
+    .chat-input button {
+      margin-left: 10px;
+
+      padding: 10px 15px;
+
+      border: none;
+
+      background: #25d366;
+
+      color: white;
+
+      border-radius: 20px;
+
+      cursor: pointer;
+    }
+
+    .chat-input button:hover {
+      background: #20b358;
+    }
+
+    /* =========================
+   HEADER
+========================= */
+
+    .chat-header {
+
+      background: #075e54;
+      color: white;
+
+      padding: 12px;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 8px;
+    }
+
+    /* top row */
+    .header-top {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+    }
+
+    /* app title */
+    .app-title {
+
+      font-size: 18px;
+
+      font-weight: bold;
+    }
+
+    /* online count */
+    #onlineCount {
+
+      font-size: 13px;
+
+      background: rgba(255, 255, 255, 0.2);
+
+      padding: 4px 8px;
+
+      border-radius: 20px;
+    }
+
+    /* selected chat user */
+    #selectedChat {
+
+      font-size: 14px;
+
+      color: #d7f7ee;
+    }
+
+    /* =========================
+   USERS LIST
+========================= */
+
+    .users-list {
+
+      padding: 10px;
+
+      background: #f8f8f8;
+
+      border-bottom: 1px solid #ddd;
+
+      max-height: 120px;
+
+      overflow-y: auto;
+    }
+
+    /* title */
+    .users-title {
+
+      font-size: 14px;
+
+      font-weight: bold;
+
+      margin-bottom: 8px;
+
+      color: #075e54;
+    }
+
+    /* active user item */
+    .user-item {
+
+      padding: 8px;
+
+      margin-bottom: 5px;
+
+      border-radius: 6px;
+
+      cursor: pointer;
+
+      background: white;
+
+      transition: 0.2s;
+    }
+
+    .user-item:hover {
+
+      background: #dcf8c6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+         CHAT UI
+    ==========================-->
+  <div class="chat-wrapper">
+
+    <div class="chat-container">
+
+      <!-- HEADER -->
+      <div class="chat-header">
+
+        <div class="app-title">
+          Chat App
+        </div>
+        <!-- <div id="selectedChat"></div> -->
+        <!-- Active users -->
+        <!-- ACTIVE USERS COUNT -->
+        <div id="onlineCount">
+          🟢 0 Online
+        </div>
+
+
+      </div>
+      <div class="users-list">
+
+        <div class="users-title">
+          Active Users
+        </div>
+
+        <div id="activeUsers"></div>
+
+      </div>
+      <!-- MESSAGE AREA -->
+      <div class="chat-box" id="chatBox"></div>
+
+      <!-- INPUT AREA -->
+      <div class="chat-input">
+
+        <input id="messageInput" placeholder="Type a message..." />
+
+        <button id="send-btn">
+          Send
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SOCKET.IO CLIENT -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+
+    // =========================
+    // SOCKET CONNECTION
+    // =========================
+
+    const socket = io(window.location.origin);
+
+    // =========================
+    // USERNAME
+    // =========================
+
+    let username = prompt("Enter your name");
+
+    while (!username || username.trim() === "") {
+
+      username = prompt("Username is required");
+    }
+
+    username = username.trim();
+
+    // =========================
+    // SELECTED USER
+    // =========================
+
+    let selectedUser = "";
+
+    // =========================
+    // DOM ELEMENTS
+    // =========================
+
+    const input =
+      document.getElementById("messageInput");
+
+    const chatBox =
+      document.getElementById("chatBox");
+
+    const btn =
+      document.getElementById("send-btn");
+
+    const activeUsersDiv =
+      document.getElementById("activeUsers");
+
+    const typingDiv =
+      document.getElementById("typing");
+
+    const selectedChat =
+      document.getElementById("selectedChat");
+
+    // =========================
+    // JOIN CHAT
+    // =========================
+
+    socket.emit("join", username);
+
+    // =========================
+    // ACTIVE USERS
+    // =========================
+
+    socket.on("active_users", (users) => {
+
+      // online count
+      document.getElementById("onlineCount")
+        .innerText =
+        "🟢 " + users.length + " Online";
+
+      activeUsersDiv.innerHTML = "";
+
+      users.forEach(user => {
+
+        // don't show yourself
+        if (user !== username) {
+
+          const div =
+            document.createElement("div");
+
+          div.classList.add("user-item");
+
+          div.innerText = user;
+
+          // select chat user
+          div.onclick = () => {
+
+            selectedUser = user;
+
+            selectedChat.innerText =
+              "Chatting with: " + user;
+
+            chatBox.innerHTML = "";
+
+            socket.emit(
+              "load_private_messages",
+              {
+                sender: username,
+                receiver: selectedUser
+              }
+            );
+          };
+
+          activeUsersDiv.appendChild(div);
+        }
+      });
+    });
+
+    // =========================
+    // LOAD PRIVATE MESSAGES
+    // =========================
+
+    socket.on(
+      "private_messages",
+      (messages) => {
+
+        chatBox.innerHTML = "";
+
+        messages.forEach(msg => {
+
+          addMessage(
+            msg.sender,
+            msg.message
+          );
+        });
+
+        scrollToBottom();
+      }
+    );
+
+    // =========================
+    // RECEIVE NEW MESSAGE
+    // =========================
+
+    socket.on("broadcast_message", (data) => {
+
+      // show only related chat messages
+      if (
+
+        (
+          data.sender === username &&
+          data.receiver === selectedUser
+        )
+
+        ||
+
+        (
+          data.sender === selectedUser &&
+          data.receiver === username
+        )
+
+      ) {
+
+        addMessage(
+          data.sender,
+          data.text
+        );
+      }
+    });
+
+    // =========================
+    // SEND MESSAGE
+    // =========================
+
+    btn.addEventListener("click", () => {
+
+      const message =
+        input.value.trim();
+
+      if (!message) return;
+
+      // select user first
+      if (!selectedUser) {
+
+        alert("Select a user first");
+
+        return;
+      }
+
+      socket.emit("new_message", {
+
+        sender: username,
+
+        receiver: selectedUser,
+
+        text: message
+      });
+
+      input.value = "";
+    });
+
+    // =========================
+    // ENTER KEY
+    // =========================
+
+    input.addEventListener("keypress", (e) => {
+
+      if (e.key === "Enter") {
+
+        btn.click();
+      }
+    });
+
+    // =========================
+    // TYPING EVENT
+    // =========================
+
+    input.addEventListener("input", () => {
+
+      if (selectedUser) {
+
+        socket.emit("typing");
+      }
+    });
+
+    // =========================
+    // TYPING INDICATOR
+    // =========================
+
+    socket.on("typing", (user) => {
+
+      typingDiv.innerText =
+        user + " is typing...";
+
+      setTimeout(() => {
+
+        typingDiv.innerText = "";
+
+      }, 1000);
+    });
+
+    // =========================
+    // ADD MESSAGE FUNCTION
+    // =========================
+
+    function addMessage(user, text) {
+
+      const div =
+        document.createElement("div");
+
+      // SENT MESSAGE
+      if (user === username) {
+
+        div.classList.add(
+          "message",
+          "sent"
+        );
+
+      }
+
+      // RECEIVED MESSAGE
+      else {
+
+        div.classList.add(
+          "message",
+          "received"
+        );
+      }
+
+      div.innerText =
+        user + ": " + text;
+
+      chatBox.appendChild(div);
+
+      scrollToBottom();
+    }
+
+    // =========================
+    // AUTO SCROLL
+    // =========================
+
+    function scrollToBottom() {
+
+      chatBox.scrollTop =
+        chatBox.scrollHeight;
+    }
+
+  </script>
+</body>
+
+</html>
