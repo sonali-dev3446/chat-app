@@ -89,10 +89,6 @@ io.on("connection", (socket) => {
 
         socket.username = username.trim();
 
-        // console.log(
-        //     socket.username,
-        //     "joined"
-        // );
 
         // add active user
         activeUsers.push(socket.username);
